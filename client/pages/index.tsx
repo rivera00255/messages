@@ -1,18 +1,21 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useMemo, useRef } from "react";
 import styled from "styled-components";
 import Message, { MessageType } from "./components/Message";
 
+export const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+
 export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  const queryClient = useQueryClient();
 
   const { mutate: createMessage } = useMutation(
     ({ content }: { content: string }) => {
       return axios.post(`${baseUrl}/messages`, { content });
-    }
+    },
+    { onSuccess: () => queryClient.invalidateQueries(["messages"]) }
   );
 
   const { data: messages } = useQuery(["messages"], () => {
@@ -42,8 +45,8 @@ export default function Home() {
           </button>
         </InnerContainer>
         <ListContainer>
-          {messageList?.map((item: MessageType, i: number) => (
-            <Message key={i} item={item} />
+          {messageList?.map((item: MessageType) => (
+            <Message key={item.id} item={item} />
           ))}
         </ListContainer>
       </div>

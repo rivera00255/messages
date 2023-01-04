@@ -1,6 +1,6 @@
 import express, { json, Request, Response, urlencoded } from "express";
 import cors from "cors";
-import { create, getList } from "./routes/messages";
+import { create, deleteMessage, getList, update } from "./routes/messages";
 
 const app = express();
 const port = 8000;
@@ -16,6 +16,8 @@ app.use(cors());
 
 app.post("/messages", create);
 app.get("/messages", getList);
+app.put("/messages", update);
+app.delete("/messages", deleteMessage);
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);

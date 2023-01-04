@@ -1,6 +1,11 @@
 import styled from "styled-components";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
+import { baseUrl } from "..";
+import { useRef } from "react";
 
 export type MessageType = {
+  id: string;
   content: string;
   createdAt: string;
   updatedAt: string;
@@ -8,12 +13,38 @@ export type MessageType = {
 
 const Message = ({ item }: { item: MessageType }) => {
   // console.log(item);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const queryClient = useQueryClient();
+
+  const { mutate: updateMessage } = useMutation(
+    ({ id, content }: { id: string; content: string }) => {
+      return axios.put(`${baseUrl}/messages`, { id, content });
+    },
+    { onSuccess: () => queryClient.invalidateQueries(["messages"]) }
+  );
+
+  const { mutate: deleteMessage } = useMutation(
+    (id: string) => {
+      return axios.delete(`${baseUrl}/messages`, { data: { id } });
+    },
+    { onSuccess: () => queryClient.invalidateQueries(["messages"]) }
+  );
+
   return (
     <Wrapper>
-      <input type="text" defaultValue={item.content} />
+      <input type="text" defaultValue={item.content} ref={inputRef} />
       <div>
-        <button>Edit</button>
-        <button>Del</button>
+        <button
+          onClick={() => {
+            if (inputRef.current) {
+              updateMessage({ id: item.id, content: inputRef.current.value });
+            }
+          }}
+        >
+          Edit
+        </button>
+        <button onClick={() => deleteMessage(item.id)}>Del</button>
       </div>
     </Wrapper>
   );
@@ -36,6 +67,10 @@ const Wrapper = styled.div`
     min-width: 50%;
     max-width: 600px;
     background: #fafafa;
+    &:focus {
+      outline: none;
+      border-bottom: 1px solid #bdbdbd;
+    }
   }
   button {
     background: #bdbdbd;
