@@ -1,9 +1,26 @@
-import { useRef } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { useMemo, useRef } from "react";
 import styled from "styled-components";
-import Message from "./components/Message";
+import Message, { MessageType } from "./components/Message";
 
 export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  const { mutate: createMessage } = useMutation(
+    ({ content }: { content: string }) => {
+      return axios.post(`${baseUrl}/messages`, { content });
+    }
+  );
+
+  const { data: messages } = useQuery(["messages"], () => {
+    return axios.get(`${baseUrl}/messages`);
+  });
+
+  const messageList = useMemo(() => messages?.data, [messages]);
+  // console.log(messageList);
 
   return (
     <Section>
@@ -15,7 +32,8 @@ export default function Home() {
           <button
             onClick={() => {
               if (inputRef.current) {
-                console.log(inputRef.current.value);
+                // console.log(inputRef.current.value);
+                createMessage({ content: inputRef.current.value });
                 inputRef.current.value = "";
               }
             }}
@@ -23,7 +41,11 @@ export default function Home() {
             Submit
           </button>
         </InnerContainer>
-        <InnerContainer></InnerContainer>
+        <ListContainer>
+          {messageList?.map((item: MessageType, i: number) => (
+            <Message key={i} item={item} />
+          ))}
+        </ListContainer>
       </div>
     </Section>
   );
@@ -57,4 +79,10 @@ const InnerContainer = styled.div`
     border-radius: 5px;
     padding: 4px 16px;
   }
+`;
+
+const ListContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;

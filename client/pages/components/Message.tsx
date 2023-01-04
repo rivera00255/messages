@@ -1,9 +1,16 @@
 import styled from "styled-components";
 
-const Message = () => {
+export type MessageType = {
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+const Message = ({ item }: { item: MessageType }) => {
+  // console.log(item);
   return (
     <Wrapper>
-      <input type="text" />
+      <input type="text" defaultValue={item.content} />
       <div>
         <button>Edit</button>
         <button>Del</button>
@@ -23,6 +30,7 @@ const Wrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 20px;
   > input {
     padding: 4px;
     min-width: 50%;
